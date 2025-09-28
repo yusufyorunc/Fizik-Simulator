@@ -1,4 +1,4 @@
-# FizikSimulator
+# Fizik Simulator
 
 FizikSimulator is an Android application under active development. This README provides a short overview, current development status, and basic instructions to build and run the project locally.
 
