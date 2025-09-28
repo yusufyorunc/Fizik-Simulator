@@ -5,6 +5,6 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_yusufyorunc_fizik_simulator_MainActivity_stringFromJNI(
         JNIEnv *env,
         jobject /* this */) {
-    std::string hello = "Hello from C++";
+    std::string hello = "Hello! Welcome to the Physics Simulator application";
     return env->NewStringUTF(hello.c_str());
 }
