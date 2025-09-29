@@ -13,7 +13,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
-            val welcomeMessage = NativeLibrary.stringFromJNI()
+            val welcomeMessage = NativeLibrary.safeStringFromJNI()
             Toast.makeText(this, welcomeMessage, Toast.LENGTH_LONG).show()
         } catch (_: Exception) {
             Toast.makeText(this, "Fizik Simülatörüne Hoş Geldiniz!", Toast.LENGTH_SHORT).show()

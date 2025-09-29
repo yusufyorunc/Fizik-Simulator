@@ -60,16 +60,10 @@ fun HomeScreen() {
                     width = 160.dp,
                     height = 110.dp,
                     onClick = {
-                        try {
-                            val result = NativeLibrary.onSpeedCardClicked()
-                            dialogTitle = "Hız Analizi"
-                            dialogContent = result
-                            showDialog = true
-                        } catch (e: Exception) {
-                            dialogTitle = "Hata"
-                            dialogContent = "Hesaplama hatası: ${e.message}"
-                            showDialog = true
-                        }
+                        val result = NativeLibrary.safeOnSpeedCardClicked()
+                        dialogTitle = "Hız Analizi"
+                        dialogContent = result
+                        showDialog = true
                     }
 
                 )
@@ -80,16 +74,10 @@ fun HomeScreen() {
                     width = 160.dp,
                     height = 110.dp,
                     onClick = {
-                        try {
-                            val result = NativeLibrary.onForceCardClicked()
-                            dialogTitle = "Kuvvet Analizi"
-                            dialogContent = result
-                            showDialog = true
-                        } catch (e: Exception) {
-                            dialogTitle = "Hata"
-                            dialogContent = "Hesaplama hatası: ${e.message}"
-                            showDialog = true
-                        }
+                        val result = NativeLibrary.safeOnForceCardClicked()
+                        dialogTitle = "Kuvvet Analizi"
+                        dialogContent = result
+                        showDialog = true
                     }
                 )
             }
@@ -106,16 +94,10 @@ fun HomeScreen() {
                 width = 340.dp,
                 height = 120.dp,
                 onClick = {
-                    try {
-                        val result = NativeLibrary.onDescriptionCardClicked()
-                        dialogTitle = "Sistem Durumu"
-                        dialogContent = result
-                        showDialog = true
-                    } catch (e: Exception) {
-                        dialogTitle = "Hata"
-                        dialogContent = "Sistem analizi hatası: ${e.message}"
-                        showDialog = true
-                    }
+                    val result = NativeLibrary.safeOnDescriptionCardClicked()
+                    dialogTitle = "Sistem Durumu"
+                    dialogContent = result
+                    showDialog = true
                 }
             )
         }
