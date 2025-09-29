@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Fizik Simulator</string>
+    <string name="app_name">Fizik Simülatörü</string>
+
+    <string name="speed">Hız</string>
+    <string name="force">Kuvvet</string>
+    <string name="description">Açıklama</string>
+
+    <string name="speed_value">%1$.1f m/s</string>
+    <string name="system_status">Sistem durumu: %1$s</string>
+
+    <plurals name="objects_count">
+        <item quantity="one">%d nesne</item>
+        <item quantity="other">%d nesne</item>
+    </plurals>
 </resources>
