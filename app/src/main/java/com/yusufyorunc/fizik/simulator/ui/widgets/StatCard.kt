@@ -26,7 +26,7 @@ fun StatCard(
 ) {
     Card(
         modifier = modifier.clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
     ) {
         Column(
