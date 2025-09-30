@@ -5,9 +5,14 @@
     <string name="speed">Hız</string>
     <string name="force">Kuvvet</string>
     <string name="description">Açıklama</string>
-
     <string name="speed_value">%1$.1f m/s</string>
     <string name="system_status">Sistem durumu: %1$s</string>
+    <string name="energy">Enerji</string>
+    <string name="speed_analysis">Hız Analizi</string>
+    <string name="force_analysis">Kuvvet Analizi</string>
+    <string name="system_status_analysis">Sistem Durumu Analizi</string>
+    <string name="energy_analysis">Enerji Analizi</string>
+    <string name="ok">Tamam</string>
 
     <plurals name="objects_count">
         <item quantity="one">%d nesne</item>

@@ -1,13 +1,13 @@
 package com.yusufyorunc.fizik.simulator.screens.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -18,14 +18,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.yusufyorunc.fizik.simulator.ui.widgets.StatCard
 import com.yusufyorunc.fizik.simulator.NativeLibrary
+import com.yusufyorunc.fizik.simulator.R
+import com.yusufyorunc.fizik.simulator.ui.widgets.StatCard
 
 
+data class CardData(
+    val title: String,
+    val value: String,
+    val dialogTitle: String,
+    val nativeCall: () -> String
+)
+
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen() {
 
@@ -34,98 +44,79 @@ fun HomeScreen() {
     var dialogTitle by remember { mutableStateOf("") }
     var dialogContent by remember { mutableStateOf("") }
 
+    val configuration = LocalConfiguration.current
+    val cardHeight = configuration.screenHeightDp.dp * 0.25f
+
+    val cardItems = listOf(
+        CardData(
+            title = stringResource(id = R.string.speed),
+            value = stringResource(id = R.string.speed_value, speedFloat),
+            dialogTitle = stringResource(id = R.string.speed_analysis),
+            nativeCall = { NativeLibrary.safeOnSpeedCardClicked() }
+        ),
+        CardData(
+            title = stringResource(id = R.string.force),
+            value = "24 N",
+            dialogTitle = stringResource(id = R.string.force_analysis),
+            nativeCall = { NativeLibrary.safeOnForceCardClicked() }
+        ),
+        CardData(
+            title = stringResource(id = R.string.description),
+            value = stringResource(id = R.string.system_status, "normal"),
+            dialogTitle = stringResource(id = R.string.system_status_analysis),
+            nativeCall = { NativeLibrary.safeOnDescriptionCardClicked() }
+        ),
+        CardData(
+            title = stringResource(id = R.string.energy),
+            value = "120 J",
+            dialogTitle = stringResource(id = R.string.energy_analysis),
+            nativeCall = { "Enerji verileri C++ tarafından hesaplandı." }
+        ),
+    )
+
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        Column(
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // İki yan yana kart
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            items(cardItems) { cardData ->
                 StatCard(
-                    title = stringResource(id = com.yusufyorunc.fizik.simulator.R.string.speed),
-                    value = stringResource(
-                        id = com.yusufyorunc.fizik.simulator.R.string.speed_value,
-                        speedFloat
-                    ),
-                    width = 160.dp,
-                    height = 110.dp,
+                    modifier = Modifier.height(cardHeight),
+                    title = cardData.title,
+                    value = cardData.value,
                     onClick = {
-                        val result = NativeLibrary.safeOnSpeedCardClicked()
-                        dialogTitle = "Hız Analizi"
-                        dialogContent = result
-                        showDialog = true
-                    }
-
-                )
-                Spacer(modifier = Modifier.width(12.dp))
-                StatCard(
-                    title = stringResource(id = com.yusufyorunc.fizik.simulator.R.string.force),
-                    value = "24 N",
-                    width = 160.dp,
-                    height = 110.dp,
-                    onClick = {
-                        val result = NativeLibrary.safeOnForceCardClicked()
-                        dialogTitle = "Kuvvet Analizi"
-                        dialogContent = result
+                        dialogContent = cardData.nativeCall()
+                        dialogTitle = cardData.dialogTitle
                         showDialog = true
                     }
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Alta sıralı geniş kart
-            StatCard(
-                title = stringResource(id = com.yusufyorunc.fizik.simulator.R.string.description),
-                value = stringResource(
-                    id = com.yusufyorunc.fizik.simulator.R.string.system_status,
-                    "normal"
-                ),
-                width = 340.dp,
-                height = 120.dp,
-                onClick = {
-                    val result = NativeLibrary.safeOnDescriptionCardClicked()
-                    dialogTitle = "Sistem Durumu"
-                    dialogContent = result
-                    showDialog = true
-                }
-            )
         }
     }
 
-    // Sonuçları gösteren dialog
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = {
-                Text(
-                    text = dialogTitle,
-                    style = MaterialTheme.typography.headlineSmall
-                )
-            },
-            text = {
-                Text(
-                    text = dialogContent,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
+            title = { Text(text = dialogTitle, style = MaterialTheme.typography.headlineSmall) },
+            text = { Text(text = dialogContent, style = MaterialTheme.typography.bodyMedium) },
             confirmButton = {
-                TextButton(
-                    onClick = { showDialog = false }
-                ) {
-                    Text("Tamam")
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(id = R.string.ok))
                 }
             }
         )
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    HomeScreen()
 }
