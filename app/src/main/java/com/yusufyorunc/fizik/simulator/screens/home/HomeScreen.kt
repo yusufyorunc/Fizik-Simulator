@@ -70,7 +70,7 @@ fun HomeScreen() {
             title = stringResource(id = R.string.energy),
             value = "120 J",
             dialogTitle = stringResource(id = R.string.energy_analysis),
-            nativeCall = { "Enerji verileri C++ tarafından hesaplandı." }
+            nativeCall = { NativeLibrary.safeOnEnergyCardClicked() }
         ),
     )
 

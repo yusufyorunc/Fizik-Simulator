@@ -24,9 +24,10 @@ object NativeLibrary {
 
     external fun onDescriptionCardClicked(): String
 
+    external fun OnEnergyCardClicked(): String
+
     external fun stringFromJNI(): String
 
-    // Güvenli wrapper metodları
     fun safeOnSpeedCardClicked(): String {
         return if (isLibraryLoaded) {
             try {
@@ -63,6 +64,19 @@ object NativeLibrary {
             }
         } else {
             "Native library yüklenemedi. Sistem analizi yapılamıyor."
+        }
+    }
+
+    fun safeOnEnergyCardClicked(): String {
+        return if (isLibraryLoaded) {
+            try {
+                OnEnergyCardClicked()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in onEnergyCardClicked: ${e.message}")
+                "Enerji hesaplaması şu anda mevcut değil. Lütfen uygulamayı yeniden başlatın."
+            }
+        } else {
+            "Native library yüklenemedi. Enerji hesaplaması yapılamıyor."
         }
     }
 

@@ -21,24 +21,19 @@ Java_com_yusufyorunc_fizik_simulator_NativeLibrary_stringFromJNI(JNIEnv *env, jo
     return env->NewStringUTF(welcome.str().c_str());
 }
 
-/**
- * Serbest düşüş hesaplaması - Kullanıcı dostu fizik simülasyonu
- */
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onSpeedCardClicked(JNIEnv *env, jobject thiz) {
     LOGI("Hız kartı tıklandı - Serbest düşüş hesaplaması başlıyor...");
 
-    // Serbest düşüş parametreleri
-    double gravity = 9.81; // m/s² (Dünya'nın çekim ivmesi)
-    double time = 3.0;     // saniye (düşüş süresi)
-    double initialHeight = 50.0; // metre (başlangıç yüksekliği)
+    double gravity = 9.81;
+    double time = 5.0;
+    double initialHeight = 50.0;
 
-    // Fizik hesaplamaları
-    double finalVelocity = gravity * time; // v = gt
-    double distanceFallen = 0.5 * gravity * time * time; // s = 1/2 * g * t²
+    double finalVelocity = gravity * time;
+    double distanceFallen = 0.5 * gravity * time * time;
     double remainingHeight = initialHeight - distanceFallen;
 
-    // Sonuçları formatlama
     std::ostringstream result;
     result << std::fixed << std::setprecision(2);
     result << "🏗️ Serbest Düşüş Analizi:\n\n";
@@ -53,25 +48,20 @@ Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onSpeedCardClicked(JNIEnv *en
     return env->NewStringUTF(result.str().c_str());
 }
 
-/**
- * Newton'un İkinci Yasası hesaplaması - F = ma
- */
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onForceCardClicked(JNIEnv *env, jobject thiz) {
     LOGI("Kuvvet kartı tıklandı - Newton'un İkinci Yasası hesaplaması...");
 
-    // Fizik parametreleri
-    double mass = 75.0;        // kg (ortalama insan ağırlığı)
-    double acceleration = 2.5; // m/s² (ivme)
-    double friction = 0.3;     // sürtünme katsayısı
+    double mass = 75.0;
+    double acceleration = 2.5;
+    double friction = 0.3;
 
-    // Kuvvet hesaplamaları
-    double appliedForce = mass * acceleration; // F = ma
-    double weightForce = mass * 9.81;         // Ağırlık kuvveti
-    double frictionForce = friction * weightForce; // Sürtünme kuvveti
-    double netForce = appliedForce - frictionForce; // Net kuvvet
+    double appliedForce = mass * acceleration;
+    double weightForce = mass * 9.81;
+    double frictionForce = friction * weightForce;
+    double netForce = appliedForce - frictionForce;
 
-    // Sonuçları formatlama
     std::ostringstream result;
     result << std::fixed << std::setprecision(2);
     result << "⚖️ Kuvvet Analizi (Newton'un 2. Yasası):\n\n";
@@ -86,21 +76,17 @@ Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onForceCardClicked(JNIEnv *en
     return env->NewStringUTF(result.str().c_str());
 }
 
-/**
- * Sistem performans analizi
- */
+
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onDescriptionCardClicked(JNIEnv *env,
                                                                             jobject thiz) {
     LOGI("Sistem kartı tıklandı - Performans analizi başlıyor...");
 
-    // Sistem metrikleri simülasyonu
-    double cpuUsage = 23.7;      // % CPU kullanımı
-    double memoryUsage = 156.8;  // MB RAM kullanımı
-    double temperature = 42.3;   // °C işlemci sıcaklığı
-    double batteryLevel = 87.5;  // % batarya seviyesi
+    double cpuUsage = 23.7;
+    double memoryUsage = 156.8;
+    double temperature = 42.3;
+    double batteryLevel = 87.5;
 
-    // Sistem durumu değerlendirmesi
     std::string status;
     std::string emoji;
 
@@ -115,7 +101,6 @@ Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onDescriptionCardClicked(JNIE
         emoji = "🔴";
     }
 
-    // Sonuçları formatlama
     std::ostringstream result;
     result << std::fixed << std::setprecision(1);
     result << "📊 Sistem Performans Raporu:\n\n";
@@ -126,6 +111,34 @@ Java_com_yusufyorunc_fizik_simulator_NativeLibrary_onDescriptionCardClicked(JNIE
     result << emoji << " Durum: " << status;
 
     LOGD("Sistem analizi tamamlandı: %s", status.c_str());
+
+    return env->NewStringUTF(result.str().c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_yusufyorunc_fizik_simulator_NativeLibrary_OnEnergyCardClicked(JNIEnv *env, jobject thiz) {
+    LOGI("Enerji kartı tıklandı - Enerji dönüşümü hesaplaması...");
+
+    double mass = 10.0;
+    double height = 20.0;
+    double velocity = 15.0;
+    double gravity = 9.81;
+
+    double potentialEnergy = mass * gravity * height;
+    double kineticEnergy = 0.5 * mass * velocity * velocity;
+    double totalEnergy = potentialEnergy + kineticEnergy;
+
+    std::ostringstream result;
+    result << std::fixed << std::setprecision(2);
+    result << "🔋 Enerji Dönüşümü Analizi:\n\n";
+    result << "📦 Kütle: " << mass << " kg\n";
+    result << "📏 Yükseklik: " << height << " m\n";
+    result << "🚀 Hız: " << velocity << " m/s\n";
+    result << "⚡ Potansiyel Enerji: " << potentialEnergy << " J\n";
+    result << "⚡ Kinetik Enerji: " << kineticEnergy << " J\n";
+    result << "⚡ Toplam Enerji: " << totalEnergy << " J";
+
+    LOGD("Enerji hesaplaması tamamlandı: Toplam Enerji = %.2f J", totalEnergy);
 
     return env->NewStringUTF(result.str().c_str());
 }
