@@ -31,21 +31,21 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
 
     // Animation Loop
     LaunchedEffect(isPlaying) {
-        val startTime = System.nanoTime()
-        val startAnimTime = animationTime
-        while (isPlaying) {
-            val currentNano = System.nanoTime()
-            val dt = (currentNano - startTime) / 1_000_000_000f // seconds
-            animationTime = startAnimTime + dt
-            
-            // Stop if we exceed input time
-            if (animationTime >= inputTime) {
-                animationTime = inputTime
-                isPlaying = false
+        if (isPlaying) {
+            val startTime = System.nanoTime()
+            val startAnimTime = animationTime
+            while (true) {
+                withFrameNanos { frameTimeNanos ->
+                    val dt = (frameTimeNanos - startTime) / 1_000_000_000f // seconds elapsed since start of this play session
+                    animationTime = startAnimTime + dt
+                }
+                
+                if (animationTime >= inputTime) {
+                    animationTime = inputTime
+                    isPlaying = false
+                    break
+                }
             }
-            
-            // Frame delay
-            kotlinx.coroutines.delay(16)
         }
     }
 
@@ -139,6 +139,24 @@ fun NewtonScreen(onBackClick: () -> Unit) {
     val resultNetForceTemplate = stringResource(R.string.result_net_force)
     val errorText = stringResource(R.string.error_generic)
 
+    // Animation
+    var isPlaying by remember { mutableStateOf(false) }
+    var animationTime by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            val startTime = System.nanoTime()
+            val startAnimTime = animationTime
+            while (true) {
+                withFrameNanos { frameTimeNanos ->
+                    val dt = (frameTimeNanos - startTime) / 1_000_000_000f
+                    animationTime = startAnimTime + dt
+                }
+                if (!isPlaying) break
+            }
+        }
+    }
+
     LaunchedEffect(mass, acceleration, friction) {
         val jsonStr = NativeLibrary.safeCalculateNewtonSecondLaw(mass.toDouble(), acceleration.toDouble(), friction.toDouble())
         try {
@@ -159,8 +177,28 @@ fun NewtonScreen(onBackClick: () -> Unit) {
 
     SimulationScreen(title = stringResource(R.string.module_newton), onBackClick = onBackClick) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
-            Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
-                NewtonVisualizer(acceleration = acceleration / 10f) // Scale for visual
+            Column(modifier = Modifier.fillMaxWidth()) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                ) {
+                    NewtonVisualizer(acceleration = acceleration / 10f, time = animationTime)
+                }
+                
+                // Controls
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                ) {
+                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
+                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    }
+                    androidx.compose.material3.Button(onClick = { 
+                        isPlaying = false
+                        animationTime = 0f 
+                    }) {
+                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                    }
+                }
             }
         }
 
@@ -193,23 +231,27 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
 
     // Animation Loop
     LaunchedEffect(isPlaying) {
-        val startTime = System.nanoTime()
-        val startAnimTime = animationTime
-        while (isPlaying) {
-            val currentNano = System.nanoTime()
-            val dt = (currentNano - startTime) / 1_000_000_000f
-            animationTime = startAnimTime + dt * 2.0f // 2x speed for projectile
+        if (isPlaying) {
+            val startTime = System.nanoTime()
+            val startAnimTime = animationTime
             
-            // Calculate total flight time to know when to stop
+            // Calculate total flight time once
             val rad = Math.toRadians(angle.toDouble())
             val vy = velocity * Math.sin(rad)
             val totalFlightTime = (2 * vy / 9.81).toFloat()
 
-            if (animationTime >= totalFlightTime) {
-                animationTime = totalFlightTime
-                isPlaying = false
+            while (true) {
+                withFrameNanos { frameTimeNanos ->
+                    val dt = (frameTimeNanos - startTime) / 1_000_000_000f
+                    animationTime = startAnimTime + dt * 2.0f // 2x speed
+                }
+
+                if (animationTime >= totalFlightTime) {
+                    animationTime = totalFlightTime
+                    isPlaying = false
+                    break
+                }
             }
-            kotlinx.coroutines.delay(16)
         }
     }
 
@@ -238,20 +280,12 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
                 androidx.compose.foundation.layout.Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp)
                 ) {
-                    // We need to pass animation progress to visualizer?
-                    // Or visualizer needs to draw partial path?
-                    // For now, let's just pass the full angle and maybe a "progress" if we update visualizer.
-                    // The current visualizer draws the full static path.
-                    // Let's update it to draw a projectile at the current position!
-                    // But ProjectileVisualizer currently only takes angle.
-                    // We need to update ProjectileVisualizer to take 'progress' or 'time'.
-                    // For now, let's just keep the static path but maybe animate a ball along it?
-                    // I'll stick to the static visualizer for now to avoid breaking changes in PhysicsVisualizers.kt
-                    // unless I update it too.
-                    // User asked for "more realistic". Moving ball is realistic.
-                    // I will update ProjectileVisualizer in next step.
-                    // For now, passing angle.
-                    ProjectileVisualizer(angle = angle)
+                    val rad = Math.toRadians(angle.toDouble())
+                    val vy = velocity * Math.sin(rad)
+                    val totalFlightTime = (2 * vy / 9.81).toFloat()
+                    val progress = if (totalFlightTime > 0) (animationTime / totalFlightTime).coerceIn(0f, 1f) else 0f
+                    
+                    ProjectileVisualizer(angle = angle, progress = progress)
                 }
                 
                  // Controls
@@ -298,13 +332,17 @@ fun PendulumScreen(onBackClick: () -> Unit) {
     val errorText = stringResource(R.string.error_generic)
 
     LaunchedEffect(isPlaying) {
-        val startTime = System.nanoTime()
-        val startAnimTime = animationTime
-        while (isPlaying) {
-            val currentNano = System.nanoTime()
-            val dt = (currentNano - startTime) / 1_000_000_000f
-            animationTime = startAnimTime + dt
-            kotlinx.coroutines.delay(16)
+        if (isPlaying) {
+            val startTime = System.nanoTime()
+            val startAnimTime = animationTime
+            while (true) {
+                withFrameNanos { frameTimeNanos ->
+                    val dt = (frameTimeNanos - startTime) / 1_000_000_000f
+                    animationTime = startAnimTime + dt
+                }
+                // Pendulum doesn't stop automatically
+                if (!isPlaying) break
+            }
         }
     }
 
