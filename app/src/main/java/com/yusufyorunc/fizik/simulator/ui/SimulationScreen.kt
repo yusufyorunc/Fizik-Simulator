@@ -23,7 +23,7 @@ fun SimulationScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF121212)) // Dark Background
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -34,14 +34,14 @@ fun SimulationScreen(
         ) {
             Button(
                 onClick = onBackClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2D2D2D))
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
-                Text("←", color = Color.White, fontSize = 20.sp)
+                Text("←", color = MaterialTheme.colorScheme.onSurface, fontSize = 20.sp)
             }
             Spacer(modifier = Modifier.width(16.dp))
             Text(
                 text = title,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -61,13 +61,13 @@ fun SimulationCard(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1E1E)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = title,
-                color = Color(0xFFBB86FC),
+                color = MaterialTheme.colorScheme.tertiary,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.padding(bottom = 12.dp)
@@ -89,16 +89,16 @@ fun InputSlider(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = label, color = Color.Gray)
-            Text(text = String.format("%.1f", value), color = Color.White)
+            Text(text = label, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f))
+            Text(text = String.format("%.1f", value), color = MaterialTheme.colorScheme.onSurface)
         }
         Slider(
             value = value,
             onValueChange = onValueChange,
             valueRange = range,
             colors = SliderDefaults.colors(
-                thumbColor = Color(0xFF03DAC5),
-                activeTrackColor = Color(0xFF03DAC5)
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary
             )
         )
     }
@@ -108,7 +108,7 @@ fun InputSlider(
 fun ResultText(text: String) {
     Text(
         text = text,
-        color = Color.White,
+        color = MaterialTheme.colorScheme.onSurface,
         fontSize = 16.sp,
         modifier = Modifier.padding(vertical = 4.dp)
     )

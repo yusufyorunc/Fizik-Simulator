@@ -23,21 +23,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         
         // Initial native check
-        try {
-            NativeLibrary.safeStringFromJNI()
-        } catch (_: Exception) { }
-
-        setContent {
-            FizikSimulatorTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = Color(0xFF121212)
-                ) {
-                    var currentScreen by remember { mutableStateOf(Screen.HOME) }
-
-                    when (currentScreen) {
-                        Screen.HOME -> HomeScreen(
-                            onNavigate = { screen -> currentScreen = screen }
                         )
                         Screen.FREE_FALL -> FreeFallScreen(onBackClick = { currentScreen = Screen.HOME })
                         Screen.NEWTON -> NewtonScreen(onBackClick = { currentScreen = Screen.HOME })

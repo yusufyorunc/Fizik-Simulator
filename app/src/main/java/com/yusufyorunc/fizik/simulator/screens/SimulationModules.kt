@@ -5,64 +5,123 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yusufyorunc.fizik.simulator.NativeLibrary
+import com.yusufyorunc.fizik.simulator.R
 import com.yusufyorunc.fizik.simulator.ui.*
 import org.json.JSONObject
 
 @Composable
 fun FreeFallScreen(onBackClick: () -> Unit) {
-    var time by remember { mutableStateOf(2.0f) }
+    var inputTime by remember { mutableStateOf(2.0f) }
     var height by remember { mutableStateOf(100.0f) }
     var resultText by remember { mutableStateOf("") }
+    
+    // Animation state
+    var isPlaying by remember { mutableStateOf(false) }
+    var animationTime by remember { mutableStateOf(0f) }
+    
+    val resultTimeTemplate = stringResource(R.string.result_time)
+    val resultInitialHeightTemplate = stringResource(R.string.result_initial_height)
+    val resultFinalVelocityTemplate = stringResource(R.string.result_final_velocity)
+    val resultDistanceFallenTemplate = stringResource(R.string.result_distance_fallen)
+    val resultRemainingHeightTemplate = stringResource(R.string.result_remaining_height)
+    val errorText = stringResource(R.string.error_calculation)
 
-    // Calculate on change
-    LaunchedEffect(time, height) {
-        val jsonStr = NativeLibrary.safeCalculateFreeFall(time.toDouble(), height.toDouble())
+    // Animation Loop
+    LaunchedEffect(isPlaying) {
+        val startTime = System.nanoTime()
+        val startAnimTime = animationTime
+        while (isPlaying) {
+            val currentNano = System.nanoTime()
+            val dt = (currentNano - startTime) / 1_000_000_000f // seconds
+            animationTime = startAnimTime + dt
+            
+            // Stop if we exceed input time
+            if (animationTime >= inputTime) {
+                animationTime = inputTime
+                isPlaying = false
+            }
+            
+            // Frame delay
+            kotlinx.coroutines.delay(16)
+        }
+    }
+
+    // Calculate based on current animation time (or input time if not playing/reset)
+    // We want to show results for the *end* state usually, but maybe dynamic results?
+    // Let's show dynamic results based on animationTime!
+    LaunchedEffect(animationTime, height) {
+        val jsonStr = NativeLibrary.safeCalculateFreeFall(animationTime.toDouble(), height.toDouble())
         try {
             val json = JSONObject(jsonStr)
             resultText = """
-                ⏱️ Süre: ${json.optDouble("time")} s
-                📏 Başlangıç: ${json.optDouble("initialHeight")} m
-                ⚡ Son Hız: %.2f m/s
-                📉 Düşülen: %.2f m
-                📍 Kalan: %.2f m
+                $resultTimeTemplate
+                $resultInitialHeightTemplate
+                $resultFinalVelocityTemplate
+                $resultDistanceFallenTemplate
+                $resultRemainingHeightTemplate
             """.trimIndent().format(
+                json.optDouble("time"),
+                json.optDouble("initialHeight"),
                 json.optDouble("finalVelocity"),
                 json.optDouble("distanceFallen"),
                 json.optDouble("remainingHeight")
             )
         } catch (e: Exception) {
-            resultText = "Hesaplama Hatası"
+            resultText = errorText
         }
     }
 
-    SimulationScreen(title = "Serbest Düşüş", onBackClick = onBackClick) {
+    SimulationScreen(title = stringResource(R.string.module_free_fall), onBackClick = onBackClick) {
         // Visual
-        SimulationCard(title = "Simülasyon") {
-            Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
-                // Animate progress based on time (just a visual approximation)
-                // In a real app we'd run an animation loop. 
-                // Here we show the state at 'time'.
-                // To make it look like an animation, we could animate 'time' from 0 to target.
-                // But for now, let's show the static state at the selected time.
-                // Or better, let's map 'time' to progress 0..1 relative to total fall time.
-                // t_total = sqrt(2h/g)
-                val totalTime = Math.sqrt(2 * height.toDouble() / 9.81).toFloat()
-                val progress = (time / totalTime).coerceIn(0f, 1f)
+        SimulationCard(title = stringResource(R.string.simulation_title)) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    val totalFallTime = Math.sqrt(2 * height.toDouble() / 9.81).toFloat()
+                    // Visual progress: 0 to 1 based on total physical fall time for this height
+                    // If animationTime > totalFallTime, ball hits ground.
+                    val progress = (animationTime / totalFallTime).coerceIn(0f, 1f)
+                    FreeFallVisualizer(progress = progress)
+                }
                 
-                FreeFallVisualizer(progress = progress)
+                // Controls
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                ) {
+                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
+                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    }
+                    androidx.compose.material3.Button(onClick = { 
+                        isPlaying = false
+                        animationTime = 0f 
+                    }) {
+                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                    }
+                }
             }
         }
 
         // Inputs
-        SimulationCard(title = "Parametreler") {
-            InputSlider(label = "Süre (s)", value = time, range = 0f..10f) { time = it }
-            InputSlider(label = "Yükseklik (m)", value = height, range = 10f..200f) { height = it }
+        SimulationCard(title = stringResource(R.string.parameters_title)) {
+            InputSlider(label = stringResource(R.string.param_time), value = inputTime, range = 0.1f..10f) { 
+                inputTime = it
+                // If we change max time, maybe reset? Or just let it be.
+            }
+            InputSlider(label = stringResource(R.string.param_height), value = height, range = 10f..200f) { 
+                height = it 
+                animationTime = 0f // Reset on height change
+            }
         }
 
         // Results
-        SimulationCard(title = "Sonuçlar") {
+        SimulationCard(title = stringResource(R.string.results_title)) {
             ResultText(resultText)
         }
     }
@@ -75,38 +134,43 @@ fun NewtonScreen(onBackClick: () -> Unit) {
     var friction by remember { mutableStateOf(0.2f) }
     var resultText by remember { mutableStateOf("") }
 
+    val resultAppliedForceTemplate = stringResource(R.string.result_applied_force)
+    val resultFrictionForceTemplate = stringResource(R.string.result_friction_force)
+    val resultNetForceTemplate = stringResource(R.string.result_net_force)
+    val errorText = stringResource(R.string.error_generic)
+
     LaunchedEffect(mass, acceleration, friction) {
         val jsonStr = NativeLibrary.safeCalculateNewtonSecondLaw(mass.toDouble(), acceleration.toDouble(), friction.toDouble())
         try {
             val json = JSONObject(jsonStr)
             resultText = """
-                💪 Uygulanan Kuvvet: %.2f N
-                🔥 Sürtünme: %.2f N
-                ⚡ Net Kuvvet: %.2f N
+                $resultAppliedForceTemplate
+                $resultFrictionForceTemplate
+                $resultNetForceTemplate
             """.trimIndent().format(
                 json.optDouble("appliedForce"),
                 json.optDouble("frictionForce"),
                 json.optDouble("netForce")
             )
         } catch (e: Exception) {
-            resultText = "Hata"
+            resultText = errorText
         }
     }
 
-    SimulationScreen(title = "Newton'un 2. Yasası", onBackClick = onBackClick) {
-        SimulationCard(title = "Simülasyon") {
+    SimulationScreen(title = stringResource(R.string.module_newton), onBackClick = onBackClick) {
+        SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                 NewtonVisualizer(acceleration = acceleration / 10f) // Scale for visual
             }
         }
 
-        SimulationCard(title = "Parametreler") {
-            InputSlider(label = "Kütle (kg)", value = mass, range = 1f..100f) { mass = it }
-            InputSlider(label = "İvme (m/s²)", value = acceleration, range = 0f..20f) { acceleration = it }
-            InputSlider(label = "Sürtünme Katsayısı", value = friction, range = 0f..1f) { friction = it }
+        SimulationCard(title = stringResource(R.string.parameters_title)) {
+            InputSlider(label = stringResource(R.string.param_mass), value = mass, range = 1f..100f) { mass = it }
+            InputSlider(label = stringResource(R.string.param_acceleration), value = acceleration, range = 0f..20f) { acceleration = it }
+            InputSlider(label = stringResource(R.string.param_friction), value = friction, range = 0f..1f) { friction = it }
         }
 
-        SimulationCard(title = "Sonuçlar") {
+        SimulationCard(title = stringResource(R.string.results_title)) {
             ResultText(resultText)
         }
     }
@@ -118,37 +182,102 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
     var angle by remember { mutableStateOf(45.0f) }
     var resultText by remember { mutableStateOf("") }
 
+    // Animation
+    var isPlaying by remember { mutableStateOf(false) }
+    var animationTime by remember { mutableStateOf(0f) }
+
+    val resultFlightTimeTemplate = stringResource(R.string.result_flight_time)
+    val resultMaxHeightTemplate = stringResource(R.string.result_max_height)
+    val resultRangeTemplate = stringResource(R.string.result_range)
+    val errorText = stringResource(R.string.error_generic)
+
+    // Animation Loop
+    LaunchedEffect(isPlaying) {
+        val startTime = System.nanoTime()
+        val startAnimTime = animationTime
+        while (isPlaying) {
+            val currentNano = System.nanoTime()
+            val dt = (currentNano - startTime) / 1_000_000_000f
+            animationTime = startAnimTime + dt * 2.0f // 2x speed for projectile
+            
+            // Calculate total flight time to know when to stop
+            val rad = Math.toRadians(angle.toDouble())
+            val vy = velocity * Math.sin(rad)
+            val totalFlightTime = (2 * vy / 9.81).toFloat()
+
+            if (animationTime >= totalFlightTime) {
+                animationTime = totalFlightTime
+                isPlaying = false
+            }
+            kotlinx.coroutines.delay(16)
+        }
+    }
+
+    // Static calculation for results (always show max values)
     LaunchedEffect(velocity, angle) {
         val jsonStr = NativeLibrary.safeCalculateProjectileMotion(velocity.toDouble(), angle.toDouble())
         try {
             val json = JSONObject(jsonStr)
             resultText = """
-                ⏱️ Uçuş Süresi: %.2f s
-                📏 Maks Yükseklik: %.2f m
-                🎯 Menzil: %.2f m
+                $resultFlightTimeTemplate
+                $resultMaxHeightTemplate
+                $resultRangeTemplate
             """.trimIndent().format(
                 json.optDouble("flightTime"),
                 json.optDouble("maxHeight"),
                 json.optDouble("range")
             )
         } catch (e: Exception) {
-            resultText = "Hata"
+            resultText = errorText
         }
     }
 
-    SimulationScreen(title = "Eğik Atış", onBackClick = onBackClick) {
-        SimulationCard(title = "Simülasyon") {
-            Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
-                ProjectileVisualizer(angle = angle)
+    SimulationScreen(title = stringResource(R.string.module_projectile), onBackClick = onBackClick) {
+        SimulationCard(title = stringResource(R.string.simulation_title)) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                ) {
+                    // We need to pass animation progress to visualizer?
+                    // Or visualizer needs to draw partial path?
+                    // For now, let's just pass the full angle and maybe a "progress" if we update visualizer.
+                    // The current visualizer draws the full static path.
+                    // Let's update it to draw a projectile at the current position!
+                    // But ProjectileVisualizer currently only takes angle.
+                    // We need to update ProjectileVisualizer to take 'progress' or 'time'.
+                    // For now, let's just keep the static path but maybe animate a ball along it?
+                    // I'll stick to the static visualizer for now to avoid breaking changes in PhysicsVisualizers.kt
+                    // unless I update it too.
+                    // User asked for "more realistic". Moving ball is realistic.
+                    // I will update ProjectileVisualizer in next step.
+                    // For now, passing angle.
+                    ProjectileVisualizer(angle = angle)
+                }
+                
+                 // Controls
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                ) {
+                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
+                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    }
+                    androidx.compose.material3.Button(onClick = { 
+                        isPlaying = false
+                        animationTime = 0f 
+                    }) {
+                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                    }
+                }
             }
         }
 
-        SimulationCard(title = "Parametreler") {
-            InputSlider(label = "Hız (m/s)", value = velocity, range = 10f..100f) { velocity = it }
-            InputSlider(label = "Açı (derece)", value = angle, range = 0f..90f) { angle = it }
+        SimulationCard(title = stringResource(R.string.parameters_title)) {
+            InputSlider(label = stringResource(R.string.param_velocity), value = velocity, range = 10f..100f) { velocity = it; animationTime = 0f }
+            InputSlider(label = stringResource(R.string.param_angle), value = angle, range = 0f..90f) { angle = it; animationTime = 0f }
         }
 
-        SimulationCard(title = "Sonuçlar") {
+        SimulationCard(title = stringResource(R.string.results_title)) {
             ResultText(resultText)
         }
     }
@@ -157,38 +286,82 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
 @Composable
 fun PendulumScreen(onBackClick: () -> Unit) {
     var length by remember { mutableStateOf(2.0f) }
-    var angle by remember { mutableStateOf(30.0f) }
+    var startAngle by remember { mutableStateOf(30.0f) }
     var resultText by remember { mutableStateOf("") }
+    
+    // Animation
+    var isPlaying by remember { mutableStateOf(false) }
+    var animationTime by remember { mutableStateOf(0f) }
 
-    LaunchedEffect(length, angle) {
-        val jsonStr = NativeLibrary.safeCalculatePendulum(length.toDouble(), angle.toDouble())
+    val resultPeriodTemplate = stringResource(R.string.result_period)
+    val resultMaxVelocityTemplate = stringResource(R.string.result_max_velocity)
+    val errorText = stringResource(R.string.error_generic)
+
+    LaunchedEffect(isPlaying) {
+        val startTime = System.nanoTime()
+        val startAnimTime = animationTime
+        while (isPlaying) {
+            val currentNano = System.nanoTime()
+            val dt = (currentNano - startTime) / 1_000_000_000f
+            animationTime = startAnimTime + dt
+            kotlinx.coroutines.delay(16)
+        }
+    }
+
+    LaunchedEffect(length, startAngle) {
+        val jsonStr = NativeLibrary.safeCalculatePendulum(length.toDouble(), startAngle.toDouble())
         try {
             val json = JSONObject(jsonStr)
             resultText = """
-                ⏱️ Periyot: %.2f s
-                ⚡ Maks Hız: %.2f m/s
+                $resultPeriodTemplate
+                $resultMaxVelocityTemplate
             """.trimIndent().format(
                 json.optDouble("period"),
                 json.optDouble("maxVelocity")
             )
         } catch (e: Exception) {
-            resultText = "Hata"
+            resultText = errorText
         }
     }
 
-    SimulationScreen(title = "Basit Sarkaç", onBackClick = onBackClick) {
-        SimulationCard(title = "Simülasyon") {
-            Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
-                PendulumVisualizer(angle = angle)
+    SimulationScreen(title = stringResource(R.string.module_pendulum), onBackClick = onBackClick) {
+        SimulationCard(title = stringResource(R.string.simulation_title)) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                ) {
+                    // Calculate current angle based on SHM: theta(t) = theta_max * cos(sqrt(g/L)*t)
+                    val gravity = 9.81
+                    val omega = Math.sqrt(gravity / length.toDouble())
+                    val currentAngle = (startAngle * Math.cos(omega * animationTime)).toFloat()
+                    
+                    PendulumVisualizer(angle = currentAngle)
+                }
+                
+                // Controls
+                androidx.compose.foundation.layout.Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                ) {
+                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
+                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    }
+                    androidx.compose.material3.Button(onClick = { 
+                        isPlaying = false
+                        animationTime = 0f 
+                    }) {
+                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                    }
+                }
             }
         }
 
-        SimulationCard(title = "Parametreler") {
-            InputSlider(label = "İp Uzunluğu (m)", value = length, range = 0.5f..5f) { length = it }
-            InputSlider(label = "Başlangıç Açısı", value = angle, range = 0f..90f) { angle = it }
+        SimulationCard(title = stringResource(R.string.parameters_title)) {
+            InputSlider(label = stringResource(R.string.param_length), value = length, range = 0.5f..5f) { length = it; animationTime = 0f }
+            InputSlider(label = stringResource(R.string.param_start_angle), value = startAngle, range = 0f..90f) { startAngle = it; animationTime = 0f }
         }
 
-        SimulationCard(title = "Sonuçlar") {
+        SimulationCard(title = stringResource(R.string.results_title)) {
             ResultText(resultText)
         }
     }
@@ -202,6 +375,11 @@ fun EnergyScreen(onBackClick: () -> Unit) {
     var resultText by remember { mutableStateOf("") }
     var peRatio by remember { mutableStateOf(0f) }
     var keRatio by remember { mutableStateOf(0f) }
+
+    val resultPotentialTemplate = stringResource(R.string.result_potential)
+    val resultKineticTemplate = stringResource(R.string.result_kinetic)
+    val resultTotalTemplate = stringResource(R.string.result_total)
+    val errorText = stringResource(R.string.error_generic)
 
     LaunchedEffect(mass, height, velocity) {
         val jsonStr = NativeLibrary.safeCalculateEnergy(mass.toDouble(), height.toDouble(), velocity.toDouble())
@@ -220,29 +398,29 @@ fun EnergyScreen(onBackClick: () -> Unit) {
             }
 
             resultText = """
-                ⚡ Potansiyel: %.2f J
-                ⚡ Kinetik: %.2f J
-                🔋 Toplam: %.2f J
+                $resultPotentialTemplate
+                $resultKineticTemplate
+                $resultTotalTemplate
             """.trimIndent().format(pe, ke, total)
         } catch (e: Exception) {
-            resultText = "Hata"
+            resultText = errorText
         }
     }
 
-    SimulationScreen(title = "Enerji Dönüşümü", onBackClick = onBackClick) {
-        SimulationCard(title = "Simülasyon") {
+    SimulationScreen(title = stringResource(R.string.module_energy), onBackClick = onBackClick) {
+        SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
                 EnergyVisualizer(peRatio = peRatio, keRatio = keRatio)
             }
         }
 
-        SimulationCard(title = "Parametreler") {
-            InputSlider(label = "Kütle (kg)", value = mass, range = 1f..50f) { mass = it }
-            InputSlider(label = "Yükseklik (m)", value = height, range = 0f..50f) { height = it }
-            InputSlider(label = "Hız (m/s)", value = velocity, range = 0f..30f) { velocity = it }
+        SimulationCard(title = stringResource(R.string.parameters_title)) {
+            InputSlider(label = stringResource(R.string.param_mass), value = mass, range = 1f..50f) { mass = it }
+            InputSlider(label = stringResource(R.string.param_height), value = height, range = 0f..50f) { height = it }
+            InputSlider(label = stringResource(R.string.param_velocity), value = velocity, range = 0f..30f) { velocity = it }
         }
 
-        SimulationCard(title = "Sonuçlar") {
+        SimulationCard(title = stringResource(R.string.results_title)) {
             ResultText(resultText)
         }
     }

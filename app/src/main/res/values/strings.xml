@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Fizik Simülatörü</string>
 
+    <!-- Home Screen -->
     <string name="speed">Hız</string>
     <string name="force">Kuvvet</string>
     <string name="description">Açıklama</string>
@@ -13,6 +14,63 @@
     <string name="system_status_analysis">Sistem Durumu Analizi</string>
     <string name="energy_analysis">Enerji Analizi</string>
     <string name="ok">Tamam</string>
+
+    <!-- Modules -->
+    <string name="module_free_fall">Serbest Düşüş</string>
+    <string name="module_free_fall_desc">Yerçekimi Analizi</string>
+    <string name="module_newton">Newton\'un 2. Yasası</string>
+    <string name="module_newton_desc">Kuvvet &amp; İvme</string>
+    <string name="module_projectile">Eğik Atış</string>
+    <string name="module_projectile_desc">Yörünge Hareketi</string>
+    <string name="module_pendulum">Basit Sarkaç</string>
+    <string name="module_pendulum_desc">Harmonik Hareket</string>
+    <string name="module_energy">Enerji Dönüşümü</string>
+    <string name="module_energy_desc">KE &amp; PE</string>
+
+    <!-- Simulation Screen -->
+    <string name="simulation_title">Simülasyon</string>
+    <string name="parameters_title">Parametreler</string>
+    <string name="results_title">Sonuçlar</string>
+    <string name="error_calculation">Hesaplama Hatası</string>
+    <string name="error_generic">Hata</string>
+    <string name="btn_start">Başlat</string>
+    <string name="btn_stop">Durdur</string>
+    <string name="btn_reset">Sıfırla</string>
+
+    <!-- Free Fall -->
+    <string name="param_time">Süre (s)</string>
+    <string name="param_height">Yükseklik (m)</string>
+    <string name="result_time">⏱️ Süre: %1$.2f s</string>
+    <string name="result_initial_height">📏 Başlangıç: %1$.2f m</string>
+    <string name="result_final_velocity">⚡ Son Hız: %1$.2f m/s</string>
+    <string name="result_distance_fallen">📉 Düşülen: %1$.2f m</string>
+    <string name="result_remaining_height">📍 Kalan: %1$.2f m</string>
+
+    <!-- Newton -->
+    <string name="param_mass">Kütle (kg)</string>
+    <string name="param_acceleration">İvme (m/s²)</string>
+    <string name="param_friction">Sürtünme Katsayısı</string>
+    <string name="result_applied_force">💪 Uygulanan Kuvvet: %1$.2f N</string>
+    <string name="result_friction_force">🔥 Sürtünme: %1$.2f N</string>
+    <string name="result_net_force">⚡ Net Kuvvet: %1$.2f N</string>
+
+    <!-- Projectile -->
+    <string name="param_velocity">Hız (m/s)</string>
+    <string name="param_angle">Açı (derece)</string>
+    <string name="result_flight_time">⏱️ Uçuş Süresi: %1$.2f s</string>
+    <string name="result_max_height">📏 Maks Yükseklik: %1$.2f m</string>
+    <string name="result_range">🎯 Menzil: %1$.2f m</string>
+
+    <!-- Pendulum -->
+    <string name="param_length">İp Uzunluğu (m)</string>
+    <string name="param_start_angle">Başlangıç Açısı</string>
+    <string name="result_period">⏱️ Periyot: %1$.2f s</string>
+    <string name="result_max_velocity">⚡ Maks Hız: %1$.2f m/s</string>
+
+    <!-- Energy -->
+    <string name="result_potential">⚡ Potansiyel: %1$.2f J</string>
+    <string name="result_kinetic">⚡ Kinetik: %1$.2f J</string>
+    <string name="result_total">🔋 Toplam: %1$.2f J</string>
 
     <plurals name="objects_count">
         <item quantity="one">%d nesne</item>
