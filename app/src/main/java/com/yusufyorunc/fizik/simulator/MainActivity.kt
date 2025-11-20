@@ -21,7 +21,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Initial native check
         try {
             NativeLibrary.safeStringFromJNI()
         } catch (_: Exception) { }

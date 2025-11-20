@@ -19,6 +19,7 @@ import com.yusufyorunc.fizik.simulator.R
 import com.yusufyorunc.fizik.simulator.Screen
 import com.yusufyorunc.fizik.simulator.ui.widgets.StatCard
 
+
 data class CardData(
     val title: String,
     val value: String,
