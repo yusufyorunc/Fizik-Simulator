@@ -18,65 +18,75 @@ object NativeLibrary {
         }
     }
 
-    external fun onSpeedCardClicked(): String
-
-    external fun onForceCardClicked(): String
-
-    external fun onDescriptionCardClicked(): String
-
-    external fun OnEnergyCardClicked(): String
-
+    external fun calculateFreeFall(time: Double, initialHeight: Double): String
+    external fun calculateNewtonSecondLaw(mass: Double, acceleration: Double, frictionCoefficient: Double): String
+    external fun calculateEnergy(mass: Double, height: Double, velocity: Double): String
+    external fun calculateProjectileMotion(velocity: Double, angleDeg: Double): String
+    external fun calculatePendulum(length: Double, angleDeg: Double): String
     external fun stringFromJNI(): String
 
-    fun safeOnSpeedCardClicked(): String {
+    fun safeCalculateFreeFall(time: Double, initialHeight: Double): String {
         return if (isLibraryLoaded) {
             try {
-                onSpeedCardClicked()
+                calculateFreeFall(time, initialHeight)
             } catch (e: Exception) {
-                Log.e(TAG, "Error in onSpeedCardClicked: ${e.message}")
-                "Hız hesaplaması şu anda mevcut değil. Lütfen uygulamayı yeniden başlatın."
+                Log.e(TAG, "Error in calculateFreeFall: ${e.message}")
+                "{}"
             }
         } else {
-            "Native library yüklenemedi. Hız hesaplaması yapılamıyor."
+            "{}"
         }
     }
 
-    fun safeOnForceCardClicked(): String {
+    fun safeCalculateNewtonSecondLaw(mass: Double, acceleration: Double, frictionCoefficient: Double): String {
         return if (isLibraryLoaded) {
             try {
-                onForceCardClicked()
+                calculateNewtonSecondLaw(mass, acceleration, frictionCoefficient)
             } catch (e: Exception) {
-                Log.e(TAG, "Error in onForceCardClicked: ${e.message}")
-                "Kuvvet hesaplaması şu anda mevcut değil. Lütfen uygulamayı yeniden başlatın."
+                Log.e(TAG, "Error in calculateNewtonSecondLaw: ${e.message}")
+                "{}"
             }
         } else {
-            "Native library yüklenemedi. Kuvvet hesaplaması yapılamıyor."
+            "{}"
         }
     }
 
-    fun safeOnDescriptionCardClicked(): String {
+    fun safeCalculateEnergy(mass: Double, height: Double, velocity: Double): String {
         return if (isLibraryLoaded) {
             try {
-                onDescriptionCardClicked()
+                calculateEnergy(mass, height, velocity)
             } catch (e: Exception) {
-                Log.e(TAG, "Error in onDescriptionCardClicked: ${e.message}")
-                "Sistem analizi şu anda mevcut değil. Lütfen uygulamayı yeniden başlatın."
+                Log.e(TAG, "Error in calculateEnergy: ${e.message}")
+                "{}"
             }
         } else {
-            "Native library yüklenemedi. Sistem analizi yapılamıyor."
+            "{}"
         }
     }
 
-    fun safeOnEnergyCardClicked(): String {
+    fun safeCalculateProjectileMotion(velocity: Double, angleDeg: Double): String {
         return if (isLibraryLoaded) {
             try {
-                OnEnergyCardClicked()
+                calculateProjectileMotion(velocity, angleDeg)
             } catch (e: Exception) {
-                Log.e(TAG, "Error in onEnergyCardClicked: ${e.message}")
-                "Enerji hesaplaması şu anda mevcut değil. Lütfen uygulamayı yeniden başlatın."
+                Log.e(TAG, "Error in calculateProjectileMotion: ${e.message}")
+                "{}"
             }
         } else {
-            "Native library yüklenemedi. Enerji hesaplaması yapılamıyor."
+            "{}"
+        }
+    }
+
+    fun safeCalculatePendulum(length: Double, angleDeg: Double): String {
+        return if (isLibraryLoaded) {
+            try {
+                calculatePendulum(length, angleDeg)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in calculatePendulum: ${e.message}")
+                "{}"
+            }
+        } else {
+            "{}"
         }
     }
 
@@ -86,10 +96,10 @@ object NativeLibrary {
                 stringFromJNI()
             } catch (e: Exception) {
                 Log.e(TAG, "Error in stringFromJNI: ${e.message}")
-                "🎯 Fizik Simülatörüne Hoş Geldiniz! 🎯\nKartlara tıklayarak fizik hesaplamalarını keşfedin!"
+                "Core Error"
             }
         } else {
-            "🎯 Fizik Simülatörüne Hoş Geldiniz! 🎯\nKartlara tıklayarak fizik hesaplamalarını keşfedin!"
+            "Native Lib Error"
         }
     }
 }
