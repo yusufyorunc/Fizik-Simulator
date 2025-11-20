@@ -1,7 +1,6 @@
 package com.yusufyorunc.fizik.simulator.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,27 +34,27 @@ fun HomeScreen(onNavigate: (Screen) -> Unit) {
     val cardItems = listOf(
         CardData(
             title = stringResource(R.string.module_free_fall),
-            value = stringResource(R.string.desc_free_fall),
+            value = stringResource(R.string.module_free_fall_desc),
             targetScreen = Screen.FREE_FALL
         ),
         CardData(
             title = stringResource(R.string.module_newton),
-            value = stringResource(R.string.desc_newton),
+            value = stringResource(R.string.module_newton_desc),
             targetScreen = Screen.NEWTON
         ),
         CardData(
             title = stringResource(R.string.module_projectile),
-            value = stringResource(R.string.desc_projectile),
+            value = stringResource(R.string.module_projectile_desc),
             targetScreen = Screen.PROJECTILE
         ),
         CardData(
             title = stringResource(R.string.module_pendulum),
-            value = stringResource(R.string.desc_pendulum),
+            value = stringResource(R.string.module_pendulum_desc),
             targetScreen = Screen.PENDULUM
         ),
         CardData(
             title = stringResource(R.string.module_energy),
-            value = stringResource(R.string.desc_energy),
+            value = stringResource(R.string.module_energy_desc),
             targetScreen = Screen.ENERGY
         )
     )

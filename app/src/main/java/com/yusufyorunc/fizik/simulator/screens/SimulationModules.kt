@@ -1,8 +1,14 @@
 package com.yusufyorunc.fizik.simulator.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -50,8 +56,6 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
     }
 
     // Calculate based on current animation time (or input time if not playing/reset)
-    // We want to show results for the *end* state usually, but maybe dynamic results?
-    // Let's show dynamic results based on animationTime!
     LaunchedEffect(animationTime, height) {
         val jsonStr = NativeLibrary.safeCalculateFreeFall(animationTime.toDouble(), height.toDouble())
         try {
@@ -78,31 +82,29 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
         // Visual
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
                 ) {
                     val totalFallTime = Math.sqrt(2 * height.toDouble() / 9.81).toFloat()
-                    // Visual progress: 0 to 1 based on total physical fall time for this height
-                    // If animationTime > totalFallTime, ball hits ground.
                     val progress = (animationTime / totalFallTime).coerceIn(0f, 1f)
                     FreeFallVisualizer(progress = progress)
                 }
                 
                 // Controls
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
-                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    Button(onClick = { isPlaying = !isPlaying }) {
+                        Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    androidx.compose.material3.Button(onClick = { 
+                    Button(onClick = { 
                         isPlaying = false
                         animationTime = 0f 
                     }) {
-                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                        Text(stringResource(R.string.btn_reset))
                     }
                 }
             }
@@ -112,7 +114,6 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
         SimulationCard(title = stringResource(R.string.parameters_title)) {
             InputSlider(label = stringResource(R.string.param_time), value = inputTime, range = 0.1f..10f) { 
                 inputTime = it
-                // If we change max time, maybe reset? Or just let it be.
             }
             InputSlider(label = stringResource(R.string.param_height), value = height, range = 10f..200f) { 
                 height = it 
@@ -178,25 +179,25 @@ fun NewtonScreen(onBackClick: () -> Unit) {
     SimulationScreen(title = stringResource(R.string.module_newton), onBackClick = onBackClick) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp)
                 ) {
                     NewtonVisualizer(acceleration = acceleration / 10f, time = animationTime)
                 }
                 
                 // Controls
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
-                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    Button(onClick = { isPlaying = !isPlaying }) {
+                        Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    androidx.compose.material3.Button(onClick = { 
+                    Button(onClick = { 
                         isPlaying = false
                         animationTime = 0f 
                     }) {
-                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                        Text(stringResource(R.string.btn_reset))
                     }
                 }
             }
@@ -277,7 +278,7 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
     SimulationScreen(title = stringResource(R.string.module_projectile), onBackClick = onBackClick) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp)
                 ) {
                     val rad = Math.toRadians(angle.toDouble())
@@ -289,18 +290,18 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
                 }
                 
                  // Controls
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
-                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    Button(onClick = { isPlaying = !isPlaying }) {
+                        Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    androidx.compose.material3.Button(onClick = { 
+                    Button(onClick = { 
                         isPlaying = false
                         animationTime = 0f 
                     }) {
-                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                        Text(stringResource(R.string.btn_reset))
                     }
                 }
             }
@@ -365,7 +366,7 @@ fun PendulumScreen(onBackClick: () -> Unit) {
     SimulationScreen(title = stringResource(R.string.module_pendulum), onBackClick = onBackClick) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
-                androidx.compose.foundation.layout.Box(
+                Box(
                     modifier = Modifier.fillMaxWidth().height(200.dp)
                 ) {
                     // Calculate current angle based on SHM: theta(t) = theta_max * cos(sqrt(g/L)*t)
@@ -377,18 +378,18 @@ fun PendulumScreen(onBackClick: () -> Unit) {
                 }
                 
                 // Controls
-                androidx.compose.foundation.layout.Row(
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                    horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    androidx.compose.material3.Button(onClick = { isPlaying = !isPlaying }) {
-                        androidx.compose.material3.Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
+                    Button(onClick = { isPlaying = !isPlaying }) {
+                        Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    androidx.compose.material3.Button(onClick = { 
+                    Button(onClick = { 
                         isPlaying = false
                         animationTime = 0f 
                     }) {
-                        androidx.compose.material3.Text(stringResource(R.string.btn_reset))
+                        Text(stringResource(R.string.btn_reset))
                     }
                 }
             }
