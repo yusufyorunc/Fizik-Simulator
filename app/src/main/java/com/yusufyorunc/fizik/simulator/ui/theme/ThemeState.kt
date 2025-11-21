@@ -23,7 +23,7 @@ class ThemeState(initialMode: ThemeMode = ThemeMode.SYSTEM) {
         }
     }
 
-    fun setThemeMode(mode: ThemeMode) {
+    fun updateThemeMode(mode: ThemeMode) {
         themeMode = mode
     }
 
