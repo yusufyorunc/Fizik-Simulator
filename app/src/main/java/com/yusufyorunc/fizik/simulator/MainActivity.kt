@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import com.yusufyorunc.fizik.simulator.screens.*
 import com.yusufyorunc.fizik.simulator.screens.home.HomeScreen
 import com.yusufyorunc.fizik.simulator.ui.theme.FizikSimulatorTheme
+import com.yusufyorunc.fizik.simulator.ui.theme.rememberThemeState
 
 enum class Screen {
     HOME, FREE_FALL, NEWTON, PROJECTILE, PENDULUM, ENERGY
@@ -27,7 +28,9 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            FizikSimulatorTheme {
+            val themeState = rememberThemeState()
+
+            FizikSimulatorTheme(useDarkTheme = themeState.isDarkTheme()) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -36,7 +39,8 @@ class MainActivity : ComponentActivity() {
 
                     when (currentScreen) {
                         Screen.HOME -> HomeScreen(
-                            onNavigate = { screen -> currentScreen = screen }
+                            onNavigate = { screen -> currentScreen = screen },
+                            themeState = themeState
                         )
 
                         Screen.FREE_FALL -> FreeFallScreen(onBackClick = {
