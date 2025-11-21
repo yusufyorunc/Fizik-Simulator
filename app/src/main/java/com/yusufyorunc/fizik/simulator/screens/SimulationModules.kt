@@ -9,13 +9,27 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.yusufyorunc.fizik.simulator.NativeLibrary
 import com.yusufyorunc.fizik.simulator.R
-import com.yusufyorunc.fizik.simulator.ui.*
+import com.yusufyorunc.fizik.simulator.ui.EnergyVisualizer
+import com.yusufyorunc.fizik.simulator.ui.FreeFallVisualizer
+import com.yusufyorunc.fizik.simulator.ui.InputSlider
+import com.yusufyorunc.fizik.simulator.ui.NewtonVisualizer
+import com.yusufyorunc.fizik.simulator.ui.PendulumVisualizer
+import com.yusufyorunc.fizik.simulator.ui.ProjectileVisualizer
+import com.yusufyorunc.fizik.simulator.ui.ResultText
+import com.yusufyorunc.fizik.simulator.ui.SimulationCard
+import com.yusufyorunc.fizik.simulator.ui.SimulationScreen
 import org.json.JSONObject
 
 @Composable
@@ -23,11 +37,11 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
     var inputTime by remember { mutableStateOf(2.0f) }
     var height by remember { mutableStateOf(100.0f) }
     var resultText by remember { mutableStateOf("") }
-    
-    // Animation state
+
+
     var isPlaying by remember { mutableStateOf(false) }
     var animationTime by remember { mutableStateOf(0f) }
-    
+
     val resultTimeTemplate = stringResource(R.string.result_time)
     val resultInitialHeightTemplate = stringResource(R.string.result_initial_height)
     val resultFinalVelocityTemplate = stringResource(R.string.result_final_velocity)
@@ -35,17 +49,17 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
     val resultRemainingHeightTemplate = stringResource(R.string.result_remaining_height)
     val errorText = stringResource(R.string.error_calculation)
 
-    // Animation Loop
     LaunchedEffect(isPlaying) {
         if (isPlaying) {
             val startTime = System.nanoTime()
             val startAnimTime = animationTime
             while (true) {
                 withFrameNanos { frameTimeNanos ->
-                    val dt = (frameTimeNanos - startTime) / 1_000_000_000f // seconds elapsed since start of this play session
+                    val dt =
+                        (frameTimeNanos - startTime) / 1_000_000_000f
                     animationTime = startAnimTime + dt
                 }
-                
+
                 if (animationTime >= inputTime) {
                     animationTime = inputTime
                     isPlaying = false
@@ -55,9 +69,9 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
         }
     }
 
-    // Calculate based on current animation time (or input time if not playing/reset)
     LaunchedEffect(animationTime, height) {
-        val jsonStr = NativeLibrary.safeCalculateFreeFall(animationTime.toDouble(), height.toDouble())
+        val jsonStr =
+            NativeLibrary.safeCalculateFreeFall(animationTime.toDouble(), height.toDouble())
         try {
             val json = JSONObject(jsonStr)
             resultText = """
@@ -73,13 +87,12 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
                 json.optDouble("distanceFallen"),
                 json.optDouble("remainingHeight")
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             resultText = errorText
         }
     }
 
     SimulationScreen(title = stringResource(R.string.module_free_fall), onBackClick = onBackClick) {
-        // Visual
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Box(
@@ -91,18 +104,19 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
                     val progress = (animationTime / totalFallTime).coerceIn(0f, 1f)
                     FreeFallVisualizer(progress = progress)
                 }
-                
-                // Controls
+
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(onClick = { isPlaying = !isPlaying }) {
                         Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    Button(onClick = { 
+                    Button(onClick = {
                         isPlaying = false
-                        animationTime = 0f 
+                        animationTime = 0f
                     }) {
                         Text(stringResource(R.string.btn_reset))
                     }
@@ -110,18 +124,24 @@ fun FreeFallScreen(onBackClick: () -> Unit) {
             }
         }
 
-        // Inputs
         SimulationCard(title = stringResource(R.string.parameters_title)) {
-            InputSlider(label = stringResource(R.string.param_time), value = inputTime, range = 0.1f..10f) { 
+            InputSlider(
+                label = stringResource(R.string.param_time),
+                value = inputTime,
+                range = 0.1f..10f
+            ) {
                 inputTime = it
             }
-            InputSlider(label = stringResource(R.string.param_height), value = height, range = 10f..200f) { 
-                height = it 
-                animationTime = 0f // Reset on height change
+            InputSlider(
+                label = stringResource(R.string.param_height),
+                value = height,
+                range = 10f..200f
+            ) {
+                height = it
+                animationTime = 0f
             }
         }
 
-        // Results
         SimulationCard(title = stringResource(R.string.results_title)) {
             ResultText(resultText)
         }
@@ -140,7 +160,6 @@ fun NewtonScreen(onBackClick: () -> Unit) {
     val resultNetForceTemplate = stringResource(R.string.result_net_force)
     val errorText = stringResource(R.string.error_generic)
 
-    // Animation
     var isPlaying by remember { mutableStateOf(false) }
     var animationTime by remember { mutableStateOf(0f) }
 
@@ -159,7 +178,11 @@ fun NewtonScreen(onBackClick: () -> Unit) {
     }
 
     LaunchedEffect(mass, acceleration, friction) {
-        val jsonStr = NativeLibrary.safeCalculateNewtonSecondLaw(mass.toDouble(), acceleration.toDouble(), friction.toDouble())
+        val jsonStr = NativeLibrary.safeCalculateNewtonSecondLaw(
+            mass.toDouble(),
+            acceleration.toDouble(),
+            friction.toDouble()
+        )
         try {
             val json = JSONObject(jsonStr)
             resultText = """
@@ -171,7 +194,7 @@ fun NewtonScreen(onBackClick: () -> Unit) {
                 json.optDouble("frictionForce"),
                 json.optDouble("netForce")
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             resultText = errorText
         }
     }
@@ -180,22 +203,25 @@ fun NewtonScreen(onBackClick: () -> Unit) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
                 ) {
                     NewtonVisualizer(acceleration = acceleration / 10f, time = animationTime)
                 }
-                
-                // Controls
+
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(onClick = { isPlaying = !isPlaying }) {
                         Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    Button(onClick = { 
+                    Button(onClick = {
                         isPlaying = false
-                        animationTime = 0f 
+                        animationTime = 0f
                     }) {
                         Text(stringResource(R.string.btn_reset))
                     }
@@ -204,9 +230,21 @@ fun NewtonScreen(onBackClick: () -> Unit) {
         }
 
         SimulationCard(title = stringResource(R.string.parameters_title)) {
-            InputSlider(label = stringResource(R.string.param_mass), value = mass, range = 1f..100f) { mass = it }
-            InputSlider(label = stringResource(R.string.param_acceleration), value = acceleration, range = 0f..20f) { acceleration = it }
-            InputSlider(label = stringResource(R.string.param_friction), value = friction, range = 0f..1f) { friction = it }
+            InputSlider(
+                label = stringResource(R.string.param_mass),
+                value = mass,
+                range = 1f..100f
+            ) { mass = it }
+            InputSlider(
+                label = stringResource(R.string.param_acceleration),
+                value = acceleration,
+                range = 0f..20f
+            ) { acceleration = it }
+            InputSlider(
+                label = stringResource(R.string.param_friction),
+                value = friction,
+                range = 0f..1f
+            ) { friction = it }
         }
 
         SimulationCard(title = stringResource(R.string.results_title)) {
@@ -222,7 +260,6 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
     var angle by remember { mutableStateOf(45.0f) }
     var resultText by remember { mutableStateOf("") }
 
-    // Animation
     var isPlaying by remember { mutableStateOf(false) }
     var animationTime by remember { mutableStateOf(0f) }
 
@@ -231,13 +268,11 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
     val resultRangeTemplate = stringResource(R.string.result_range)
     val errorText = stringResource(R.string.error_generic)
 
-    // Animation Loop
     LaunchedEffect(isPlaying) {
         if (isPlaying) {
             val startTime = System.nanoTime()
             val startAnimTime = animationTime
-            
-            // Calculate total flight time once
+
             val rad = Math.toRadians(angle.toDouble())
             val vy = velocity * Math.sin(rad)
             val totalFlightTime = (2 * vy / 9.81).toFloat()
@@ -245,7 +280,7 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
             while (true) {
                 withFrameNanos { frameTimeNanos ->
                     val dt = (frameTimeNanos - startTime) / 1_000_000_000f
-                    animationTime = startAnimTime + dt * 2.0f // 2x speed
+                    animationTime = startAnimTime + dt * 2.0f
                 }
 
                 if (animationTime >= totalFlightTime) {
@@ -257,9 +292,9 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
         }
     }
 
-    // Static calculation for results (always show max values)
     LaunchedEffect(velocity, angle) {
-        val jsonStr = NativeLibrary.safeCalculateProjectileMotion(velocity.toDouble(), angle.toDouble())
+        val jsonStr =
+            NativeLibrary.safeCalculateProjectileMotion(velocity.toDouble(), angle.toDouble())
         try {
             val json = JSONObject(jsonStr)
             resultText = """
@@ -271,36 +306,46 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
                 json.optDouble("maxHeight"),
                 json.optDouble("range")
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             resultText = errorText
         }
     }
 
-    SimulationScreen(title = stringResource(R.string.module_projectile), onBackClick = onBackClick) {
+    SimulationScreen(
+        title = stringResource(R.string.module_projectile),
+        onBackClick = onBackClick
+    ) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
                 ) {
                     val rad = Math.toRadians(angle.toDouble())
                     val vy = velocity * Math.sin(rad)
                     val totalFlightTime = (2 * vy / 9.81).toFloat()
-                    val progress = if (totalFlightTime > 0) (animationTime / totalFlightTime).coerceIn(0f, 1f) else 0f
-                    
+                    val progress =
+                        if (totalFlightTime > 0) (animationTime / totalFlightTime).coerceIn(
+                            0f,
+                            1f
+                        ) else 0f
+
                     ProjectileVisualizer(angle = angle, progress = progress)
                 }
-                
-                 // Controls
+
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(onClick = { isPlaying = !isPlaying }) {
                         Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    Button(onClick = { 
+                    Button(onClick = {
                         isPlaying = false
-                        animationTime = 0f 
+                        animationTime = 0f
                     }) {
                         Text(stringResource(R.string.btn_reset))
                     }
@@ -309,8 +354,16 @@ fun ProjectileScreen(onBackClick: () -> Unit) {
         }
 
         SimulationCard(title = stringResource(R.string.parameters_title)) {
-            InputSlider(label = stringResource(R.string.param_velocity), value = velocity, range = 10f..100f) { velocity = it; animationTime = 0f }
-            InputSlider(label = stringResource(R.string.param_angle), value = angle, range = 0f..90f) { angle = it; animationTime = 0f }
+            InputSlider(
+                label = stringResource(R.string.param_velocity),
+                value = velocity,
+                range = 10f..100f
+            ) { velocity = it; animationTime = 0f }
+            InputSlider(
+                label = stringResource(R.string.param_angle),
+                value = angle,
+                range = 0f..90f
+            ) { angle = it; animationTime = 0f }
         }
 
         SimulationCard(title = stringResource(R.string.results_title)) {
@@ -324,8 +377,7 @@ fun PendulumScreen(onBackClick: () -> Unit) {
     var length by remember { mutableStateOf(2.0f) }
     var startAngle by remember { mutableStateOf(30.0f) }
     var resultText by remember { mutableStateOf("") }
-    
-    // Animation
+
     var isPlaying by remember { mutableStateOf(false) }
     var animationTime by remember { mutableStateOf(0f) }
 
@@ -342,7 +394,6 @@ fun PendulumScreen(onBackClick: () -> Unit) {
                     val dt = (frameTimeNanos - startTime) / 1_000_000_000f
                     animationTime = startAnimTime + dt
                 }
-                // Pendulum doesn't stop automatically
                 if (!isPlaying) break
             }
         }
@@ -359,7 +410,7 @@ fun PendulumScreen(onBackClick: () -> Unit) {
                 json.optDouble("period"),
                 json.optDouble("maxVelocity")
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             resultText = errorText
         }
     }
@@ -368,27 +419,29 @@ fun PendulumScreen(onBackClick: () -> Unit) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Box(
-                    modifier = Modifier.fillMaxWidth().height(200.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
                 ) {
-                    // Calculate current angle based on SHM: theta(t) = theta_max * cos(sqrt(g/L)*t)
                     val gravity = 9.81
                     val omega = Math.sqrt(gravity / length.toDouble())
                     val currentAngle = (startAngle * Math.cos(omega * animationTime)).toFloat()
-                    
+
                     PendulumVisualizer(angle = currentAngle)
                 }
-                
-                // Controls
+
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(onClick = { isPlaying = !isPlaying }) {
                         Text(if (isPlaying) stringResource(R.string.btn_stop) else stringResource(R.string.btn_start))
                     }
-                    Button(onClick = { 
+                    Button(onClick = {
                         isPlaying = false
-                        animationTime = 0f 
+                        animationTime = 0f
                     }) {
                         Text(stringResource(R.string.btn_reset))
                     }
@@ -397,8 +450,16 @@ fun PendulumScreen(onBackClick: () -> Unit) {
         }
 
         SimulationCard(title = stringResource(R.string.parameters_title)) {
-            InputSlider(label = stringResource(R.string.param_length), value = length, range = 0.5f..5f) { length = it; animationTime = 0f }
-            InputSlider(label = stringResource(R.string.param_start_angle), value = startAngle, range = 0f..90f) { startAngle = it; animationTime = 0f }
+            InputSlider(
+                label = stringResource(R.string.param_length),
+                value = length,
+                range = 0.5f..5f
+            ) { length = it; animationTime = 0f }
+            InputSlider(
+                label = stringResource(R.string.param_start_angle),
+                value = startAngle,
+                range = 0f..90f
+            ) { startAngle = it; animationTime = 0f }
         }
 
         SimulationCard(title = stringResource(R.string.results_title)) {
@@ -422,13 +483,17 @@ fun EnergyScreen(onBackClick: () -> Unit) {
     val errorText = stringResource(R.string.error_generic)
 
     LaunchedEffect(mass, height, velocity) {
-        val jsonStr = NativeLibrary.safeCalculateEnergy(mass.toDouble(), height.toDouble(), velocity.toDouble())
+        val jsonStr = NativeLibrary.safeCalculateEnergy(
+            mass.toDouble(),
+            height.toDouble(),
+            velocity.toDouble()
+        )
         try {
             val json = JSONObject(jsonStr)
             val pe = json.optDouble("potentialEnergy")
             val ke = json.optDouble("kineticEnergy")
             val total = json.optDouble("totalEnergy")
-            
+
             if (total > 0) {
                 peRatio = (pe / total).toFloat()
                 keRatio = (ke / total).toFloat()
@@ -442,22 +507,38 @@ fun EnergyScreen(onBackClick: () -> Unit) {
                 $resultKineticTemplate
                 $resultTotalTemplate
             """.trimIndent().format(pe, ke, total)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             resultText = errorText
         }
     }
 
     SimulationScreen(title = stringResource(R.string.module_energy), onBackClick = onBackClick) {
         SimulationCard(title = stringResource(R.string.simulation_title)) {
-            Column(modifier = Modifier.fillMaxWidth().height(200.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
                 EnergyVisualizer(peRatio = peRatio, keRatio = keRatio)
             }
         }
 
         SimulationCard(title = stringResource(R.string.parameters_title)) {
-            InputSlider(label = stringResource(R.string.param_mass), value = mass, range = 1f..50f) { mass = it }
-            InputSlider(label = stringResource(R.string.param_height), value = height, range = 0f..50f) { height = it }
-            InputSlider(label = stringResource(R.string.param_velocity), value = velocity, range = 0f..30f) { velocity = it }
+            InputSlider(
+                label = stringResource(R.string.param_mass),
+                value = mass,
+                range = 1f..50f
+            ) { mass = it }
+            InputSlider(
+                label = stringResource(R.string.param_height),
+                value = height,
+                range = 0f..50f
+            ) { height = it }
+            InputSlider(
+                label = stringResource(R.string.param_velocity),
+                value = velocity,
+                range = 0f..30f
+            ) { velocity = it }
         }
 
         SimulationCard(title = stringResource(R.string.results_title)) {

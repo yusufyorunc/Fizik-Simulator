@@ -20,10 +20,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         try {
             NativeLibrary.safeStringFromJNI()
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+        }
 
         setContent {
             FizikSimulatorTheme {
@@ -37,10 +38,20 @@ class MainActivity : ComponentActivity() {
                         Screen.HOME -> HomeScreen(
                             onNavigate = { screen -> currentScreen = screen }
                         )
-                        Screen.FREE_FALL -> FreeFallScreen(onBackClick = { currentScreen = Screen.HOME })
+
+                        Screen.FREE_FALL -> FreeFallScreen(onBackClick = {
+                            currentScreen = Screen.HOME
+                        })
+
                         Screen.NEWTON -> NewtonScreen(onBackClick = { currentScreen = Screen.HOME })
-                        Screen.PROJECTILE -> ProjectileScreen(onBackClick = { currentScreen = Screen.HOME })
-                        Screen.PENDULUM -> PendulumScreen(onBackClick = { currentScreen = Screen.HOME })
+                        Screen.PROJECTILE -> ProjectileScreen(onBackClick = {
+                            currentScreen = Screen.HOME
+                        })
+
+                        Screen.PENDULUM -> PendulumScreen(onBackClick = {
+                            currentScreen = Screen.HOME
+                        })
+
                         Screen.ENERGY -> EnergyScreen(onBackClick = { currentScreen = Screen.HOME })
                     }
                 }

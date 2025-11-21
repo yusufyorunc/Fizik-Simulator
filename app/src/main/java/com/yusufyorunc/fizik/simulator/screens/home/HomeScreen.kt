@@ -1,5 +1,6 @@
 package com.yusufyorunc.fizik.simulator.screens.home
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -26,6 +27,7 @@ data class CardData(
     val targetScreen: Screen
 )
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun HomeScreen(onNavigate: (Screen) -> Unit) {
     val configuration = LocalConfiguration.current
